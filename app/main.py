@@ -82,23 +82,33 @@ def AddPets(type= _fastapi.Form(...),
 
 
 
+
+
+
+
+
+
+
+
+
 #search endpoing
 # Search local DB and also use petfinder animals endpoint to
-@app.get("/pet{type}/{gender}/{size}/{limit}")
-async def getPetsList(type:str,
-                      gender:str,
-                      size:str,
+@app.get("/pets{type}/{limit}")
+def getPetsList(type:str,
+                    #   gender:str,
+                    #   size:str,
                     #   goodWithChildren:bool,
                       limit:int=3,
                       session:_orm.Session=_fastapi.Depends(get_session)):
 
+    # /gender/{gender}/size/{size}/limit{limit}
     
     pet_collection=[]
 
     try:
         local_source_pets=session.query(_models.Pet).filter(_models.Pet.type==type,
-                                                            _models.Pet.Gender==gender,
-                                                            _models.Pet.size==size,
+                                                            # _models.Pet.Gender==gender,
+                                                            # _models.Pet.size==size,
                                                             # _models.Pet.goodWithChildren==goodWithChildren,
                                                             # _models.Pet.pet_have_owner==False
                                                             ).limit(limit).all()
@@ -108,16 +118,14 @@ async def getPetsList(type:str,
         if local_source_pets is not None:
             pet_collection.append("Source:local database")
             pet_collection.append(local_source_pets)
-            session.add(pet_collection)
-            session.commit()
-            session.refresh(pet_collection)
-
+         
         elif remote_source_pets is not None:
             pet_collection.append("source:remote API")
             pet_collection.append(remote_source_pets)
             session.add(pet_collection)
             session.commit()
             session.refresh(pet_collection)
+            return pet_collection
            
         
     finally:
@@ -125,10 +133,11 @@ async def getPetsList(type:str,
 
 
 # get endpoint or list each pets 
-@app.get("/petdetail/{id}")
+@app.get("/pet_detail/{id}")
 async def getPetsDetail(id:int,
-                        session:_orm.Session=_fastapi.Depends(get_session),
-                        status_code="you are successfull"):
+                      session:_orm.Session=_fastapi.Depends(get_session),
+                        status_code="you are successfull"
+                        ):
     
     pets=session.query(_models.Pet).filter(_models.Pet.petId==id).first()
     return {'pet detail':pets}
@@ -177,8 +186,8 @@ async def getCustomer(skip:int=0,
 # i.e. the oldest requests appear at
 # the top
 import datetime
-@app.get("/adoptions/{limit}")
-async def getAdoption(
+@app.get("/adoptions_request/{limit}")
+def getAdoption(
                     #   fromDate:datetime.date.today(),
                     #   toDate:datetime.date.today(),
                       session:_orm.Session=_fastapi.Depends(get_session),
@@ -217,7 +226,8 @@ def addAdoption(adoption:_schemas.Adoption,
         session.add(adoption_request)
         # session.commit()
         # session.refresh(adoption_request)
-        return {'adoptionId':adoption_request.petId }
+        return {'status':"success",
+            'adoptionId':adoption_request.petId }
     
     
     
@@ -228,22 +238,16 @@ def addAdoption(adoption:_schemas.Adoption,
 
 
 
-# @app.post("/generateReport")
-# def generateReport(adoption:_schemas.CreateAdoptionDateRequest,
-#                 session:_orm.Session=_fastapi.Depends(get_session)):
+@app.post("/generateReport")
+def generateReport(adoption:_schemas.Adoption,
+                session:_orm.Session=_fastapi.Depends(get_session)):
     
-#     adoption_report=session.query(_models.Pet).filter(_models.Customer.adoption_request_date>=adoption.fromDate and 
-#                                                           _models.Customer.adoption_request_date<=adoption.toDate).count().all
+    adoption_report=session.query(_models.Pet).filter(_models.Customer.adoption_request_date>=adoption.fromDate and 
+                                                          _models.Customer.adoption_request_date<=adoption.toDate).count().all
    
-#     if adoption_report is not None:
-#        return {'status' : 'success','data':adoption_report }  
-#     else:
+    if adoption_report is not None:
+       return {'status' : 'success','data':adoption_report }  
+    else:
 
-#         raise _fastapi.HTTPException(status_code=404, detail="no exisiting adoption report ")
-
-        
-
-       
-    
-
+        raise _fastapi.HTTPException(status_code=404, detail="no exisiting adoption report ")
 

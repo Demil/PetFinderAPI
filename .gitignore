@@ -1,2 +1,3 @@
-app.PetFinderAPI.py
-app.
+.env
+docker-compose.yml
+Dockerfile

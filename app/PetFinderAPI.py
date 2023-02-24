@@ -1,5 +1,8 @@
 # library for remotePetFinder Api
 import petpy
+import os
+from dotenv import load_dotenv
 
-pf = petpy.Petfinder(key="C4BRDeDwtxU8dNGqzbUbGy0AQAzLlzfb5bXczK03l1iTQCd1X5", 
-                        secret="3pYEKj8cHTFYAIrym1nNopHjLPWX4MLwlTBcHa6E")
+load_dotenv()
+pf = petpy.Petfinder(key=os.getenv("API_KEY"), 
+                    secret=os.getenv("API_SECRETE"))

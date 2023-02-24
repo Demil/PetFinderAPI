@@ -1,26 +1,31 @@
 version: '3'
-
 services:
-  fast_api:
+  web:
     build: .
+    # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
     command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0'
     volumes:
-     - .:/app
-    # container_name: "PetFinderFastAPI"
-    image: pet_finder_api_container
+     - .:/home/dem/solution/Documents/docker
+    image: petfinderimage
     ports:
-      [8008:8000]
+      [8000:8000]
     environment:
       - DATABASE_URL="postgresql://demilew:Demian752728@localhost/pet_db"
+  
     depends_on:
-      - db
+    - db
+   
   
   db:
     image: postgres:15-alpine
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data/
+    restart: always
+
+
     expose:
       - 5432
+      
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data/
     environment:
       - POSTGRES_USER=demilew
       - POSTGRES_PASSWORD=Demian752728
